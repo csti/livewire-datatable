@@ -5,7 +5,9 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 
 // abstract class DataTable extends Component
-// class CompaniesTable extends DataTable
+// class ContactsTable extends DataTable
+
+use Log;
 
 class DataTable extends Component
 {
@@ -14,48 +16,53 @@ class DataTable extends Component
     public $current;
     public $length;
     public $total;
+    protected $builder;
 
-    public function mount($start) 
+    public function mount($start = 0, $length = 10) 
     {
+        Log::info('mounting');
+        $this->current = $start;
+        $this->length = $length;
+        $this->total = 0;
+    
+        $this->builder = new \App\Contact;
+
         // set the data and count params
         $this->fields = $this->getFields();
-        $this->data = $this->getData();
+        $this->data = $this->getData(true);
 
-        $this->current = 1;
-        $this->length = 2;
-        $this->total = 2;
     }
 
     public function prev () 
     {
-
+        $this->current -= $this->length;
+        $this->data = $this->getData();
     }
 
     public function next () 
     {
-
+        $this->current += $this->length;
+        $this->data = $this->getData();
     }
 
-    public function getData() : array
+    public function getData($withTotal = false) : array
     {
-        // Representatives 
-        //     Name
-        //     Email
-        //     Title
-        //     Phone
-        //     Favorite (Action)
-        //     Active (Boolean)
-        return [
-            ['id' => 1, 'author_name' => 'Cat'],
-            ['id' => 2, 'author_name' => 'Daniel']
-        ];
+        if ($withTotal)
+            $this->total = $this->builder->count();
+        $data = $this->builder->offset($this->current)
+                            ->limit($this->length)
+                            ->get();
+        
+        return $data->toArray();
     }
     public function getFields()
     {
         return collect(
             [
                 (Object) ['label' => 'ID', 'name' => 'id'],
-                (Object) ['label' => 'Author Name', 'name' => 'author_name'],
+                (Object) ['label' => 'Name', 'name' => 'name'],
+                (Object) ['label' => 'Email Address', 'name' => 'email'],
+                (Object) ['label' => 'Job Title', 'name' => 'title'],
             ]);
     }
 

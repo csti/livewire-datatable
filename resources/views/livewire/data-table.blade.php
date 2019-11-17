@@ -16,7 +16,7 @@
     </table>
     <div class="py-4 text-center">
         <button wire:click="prev" class="bg-gray-700 hover:bg-gray-900 text-white font-bold py-2 px-8">Prev</button>
-        <span class="text-center px-8">{{$current}}-{{$length}} of {{$total}}</span>
+        <span class="text-center px-8">{{$current}}-{{$current + $length}} of {{$total}}</span>
         <button wire:click="next" class="bg-gray-700 hover:bg-gray-900 text-white font-bold py-2 px-8">Next</button>
     </div>
     </div>
