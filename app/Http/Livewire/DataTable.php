@@ -4,11 +4,14 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 
-// abstract class DataTable extends Component
-// class ContactsTable extends DataTable
-
 use Log;
 
+
+// abstract class DataTable extends Component
+class ContactsTable extends DataTable
+{
+
+}
 class DataTable extends Component
 {
     protected $fields;
