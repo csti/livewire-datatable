@@ -16,21 +16,25 @@ class DataTable extends Component
     public $current;
     public $length;
     public $total;
-    protected $builder;
+    protected $builder = null;
 
     public function mount($start = 0, $length = 10) 
     {
-        Log::info('mounting');
         $this->current = $start;
         $this->length = $length;
         $this->total = 0;
     
-        $this->builder = new \App\Contact;
-
         // set the data and count params
         $this->fields = $this->getFields();
-        $this->data = $this->getData(true);
+        $this->total = $this->builder()->count();
+        $this->data = $this->getData();
+    }
 
+    private function builder()
+    {
+        return ($this->builder === null) 
+            ? $this->builder = new \App\Contact 
+            : $this->builder;
     }
 
     public function prev () 
@@ -45,17 +49,15 @@ class DataTable extends Component
         $this->data = $this->getData();
     }
 
-    public function getData($withTotal = false) : array
+    protected function getData() : array
     {
-        if ($withTotal)
-            $this->total = $this->builder->count();
-        $data = $this->builder->offset($this->current)
+        return $this->builder()->offset($this->current)
                             ->limit($this->length)
-                            ->get();
+                            ->get($this->getFields()->pluck('name')->all())
+                            ->toArray();
         
-        return $data->toArray();
     }
-    public function getFields()
+    protected function getFields()
     {
         return collect(
             [
