@@ -3,5 +3,5 @@
 @extends('layout')
 
 @section('content')
-    @livewire('data-table')
+    @livewire('contacts-table')
 @endsection

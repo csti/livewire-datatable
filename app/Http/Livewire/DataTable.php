@@ -2,70 +2,90 @@
 
 namespace App\Http\Livewire;
 
+use Illuminate\Support\Collection;
 use Livewire\Component;
-
+use Livewire\WithPagination;
 use Log;
 
-
-// abstract class DataTable extends Component
-class ContactsTable extends DataTable
+abstract class DataTable extends Component
 {
+    use WithPagination;
 
-}
-class DataTable extends Component
-{
     protected $fields;
-    public $data;
-    public $current;
+    protected $sortFields;
+    public $from;
+    public $to;
     public $length;
     public $total;
-    protected $builder = null;
+    public $sortField = null;
+    public $sortAsc = true;
 
     public function mount($start = 0, $length = 10) 
     {
-        $this->current = $start;
         $this->length = $length;
         $this->total = 0;
     
         // set the data and count params
         $this->fields = $this->getFields();
+        $this->sortFields = $this->getSortFields($this->fields);
         $this->total = $this->builder()->count();
-        $this->data = $this->getData();
     }
 
-    private function builder()
+    abstract protected function builder();
+
+    public function sortBy ($field) 
     {
-        return ($this->builder === null) 
-            ? $this->builder = new \App\Contact 
-            : $this->builder;
+        if (!$this->sortFields->contains('name', $field)) return;
+
+        if ($this->sortField === $field) {
+            $this->sortAsc = !$this->sortAsc;
+        } else {
+            $this->sortAsc = true;
+        }
+        $this->gotoPage(1);
+        $this->sortField = $field;
     }
 
     public function prev () 
     {
-        $this->current -= $this->length;
-        $this->data = $this->getData();
+        $this->previousPage();
     }
 
     public function next () 
     {
-        $this->current += $this->length;
-        $this->data = $this->getData();
+        $this->nextPage();
     }
 
-    protected function getData() : array
+
+    private function getData() 
     {
-        return $this->builder()->offset($this->current)
-                            ->limit($this->length)
-                            ->get($this->getFields()->pluck('name')->all())
-                            ->toArray();
+        $builder = $this->builder()->select($this->getFields()->pluck('name')->all());
+
+        if ($this->sortField !== null) {
+            $builder->orderBy($this->sortField, ($this->sortAsc) ? 'asc' : 'desc');
+        }
+
+        $result = $builder->paginate($this->length);
+
+        $this->from = $result->firstItem();
+        $this->to = $result->lastItem();
+
+        return $result;
         
     }
-    protected function getFields()
+
+    private function getSortFields(Collection $fields)
+    {
+        return $fields->filter(function ($item) {
+            return !(empty($item->sortable));
+        });
+    }
+    private function getFields()
     {
         return collect(
             [
-                (Object) ['label' => 'ID', 'name' => 'id'],
-                (Object) ['label' => 'Name', 'name' => 'name'],
+                (Object) ['label' => 'ID', 'name' => 'id',  'sortable' => true],
+                (Object) ['label' => 'Name', 'name' => 'name', 'sortable' => true],
                 (Object) ['label' => 'Email Address', 'name' => 'email'],
                 (Object) ['label' => 'Job Title', 'name' => 'title'],
             ]);
@@ -73,6 +93,8 @@ class DataTable extends Component
 
     public function render()
     {
-        return view('livewire.data-table', ['fields' => $this->fields]);
+        return view('livewire.data-table', ['fields' => $this->fields,
+                                        'contacts' => $this->getData()
+                                        ]);
     }
 }
