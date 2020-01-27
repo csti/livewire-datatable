@@ -9,8 +9,8 @@ use Spatie\SchemalessAttributes\SchemalessAttributes;
 class EndpointAction extends Model
 {
 
-    protected $fillable = ['action'];
-    
+    protected $fillable = ['active'];
+
    public function endpoint () 
    {
       return $this->belongsTo('App\Models\Endpoint', 'endpoint_id', 'id');

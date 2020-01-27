@@ -7,22 +7,17 @@ use Livewire\Component;
 class EndpointAction extends Component
 {
     public $action;
-    public $active;
     
     public function mount($action)
     {
         $this->action = $action;
-        $this->active = $action->active;
     }
 
-    public function updatedActive($value)
+    public function toggleActive()
     {
-        \App\Models\EndpointAction::find($this->action->id)->update(['active'=> 0]);
+        \App\Models\EndpointAction::find($this->action->id)->update(['active'=> !$this->action->active]);
     }
-    public function getActionProperty()
-    {
-        return $this->action;
-    }
+
 
     public function render()
     {
