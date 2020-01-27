@@ -12,5 +12,6 @@
 */
 
 Route::get('/', function () {
-    return view('index');
+    $objects = App\Models\DbObject::with('endpoints.actions')->get();
+    return view('index', ['objects' => $objects]);
 });
