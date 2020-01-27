@@ -15,6 +15,10 @@ class EndpointAction extends Component
         $this->active = $action->active;
     }
 
+    public function updatedActive($value)
+    {
+        \App\Models\EndpointAction::find($this->action->id)->update(['active'=> 0]);
+    }
     public function getActionProperty()
     {
         return $this->action;
